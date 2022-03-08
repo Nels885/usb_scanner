@@ -26,3 +26,25 @@ r = Reader(keymap="UK")
 # Waiting for a barcode to be read
 r.read()
 ```
+
+## Fix udev permissions
+
+
+Create a Udev rule for the use of USB scanners (hidraw*)
+
+```shell
+$ sudo nano /etc/udev/rules.d/99-hidraw-permissions.rules
+```
+
+and add the following lines
+
+```
+SUBSYSTEM=="usb", ATTRS{idVendor}=="05e0", ATTRS{idProduct}=="1200", MODE="666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="080c", ATTRS{idProduct}=="0300", MODE="666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0c2e", ATTRS{idProduct}=="1001", MODE="666"
+```
+Finally reload the udev rules with the following command
+
+```shell
+$ sudo udevadm control --reload-rules && sudo udevadm trigger
+```

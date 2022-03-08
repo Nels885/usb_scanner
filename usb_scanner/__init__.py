@@ -43,7 +43,6 @@ class Reader:
         self.interfaces, self.configs = 0, 0
         self._device = None
         self._endpoint = None
-        self.initialize()
 
     def initialize(self):
         for scanner in scanners:
