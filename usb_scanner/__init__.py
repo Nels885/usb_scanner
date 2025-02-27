@@ -88,6 +88,8 @@ class Reader:
                         raise ReadException('Got %s bytes instead of %s - %s' % (len(data), self.dataSize, str(data)))
                     else:
                         break
+                elif e.args[0] == 19:
+                    raise ReadException(e.args[-1])
                 if isinstance(timeout, int):
                     timeout -= 1
 
