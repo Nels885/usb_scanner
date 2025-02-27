@@ -103,11 +103,14 @@ class Reader:
         return mapping.keys_page[self.keymap].get(c, '')
 
     def disconnect(self):
-        if self.shouldReset:
-            self._device.reset()
-        for i in range(self.interfaces):
-            usb.util.release_interface(self._device, i)
-            self._device.attach_kernel_driver(i)
+        try:
+            if self.shouldReset:
+                self._device.reset()
+            for i in range(self.interfaces):
+                usb.util.release_interface(self._device, i)
+                self._device.attach_kernel_driver(i)
+        except usb.core.USBError as err:
+            raise DeviceException(f'Could not disconnect from device: {err}')
 
     def _decode_raw_data(self, raw_data):
         data = self._extract_meaningful_data_from_chunk(raw_data)
