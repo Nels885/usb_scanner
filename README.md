@@ -25,6 +25,9 @@ r = Reader(keymap="UK")
 
 # Waiting for a barcode to be read
 r.read()
+
+# If you want have a timeout for the reading
+r.read(timeout=10)
 ```
 
 ## Fix udev permissions

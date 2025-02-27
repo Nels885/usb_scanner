@@ -37,7 +37,7 @@ class Reader:
         self.idVendor = kwargs.get("vendor_id", None)
         self.idProduct = kwargs.get("product_id", None)
         self.deviceName = kwargs.get("device_name", "unknown")
-        self.dataSize = kwargs.get("data_size", 84)
+        self.dataSize = kwargs.get("data_size", None)  # 84 is the size of the data for the scanner
         self.chunkSize = kwargs.get("chunk_size", 16)
         self.shouldReset = kwargs.get("should_reset", False)
         self.interfaces, self.configs = 0, 0
@@ -50,7 +50,7 @@ class Reader:
             if self._device is not None:
                 self.deviceName, self.idVendor, self.idProduct, self.chunkSize = scanner
                 break
-    
+
         if self._device is None:
             raise DeviceException('No device found, check vendor_id and product_id')
 
@@ -73,23 +73,24 @@ class Reader:
     def get_device_config(self):
         return print(self._device[0])
 
-    def read(self):
+    def read(self, timeout=None):
         self.initialize()
-        data = []
-        data_read = False
+        data, data_read = [], False
 
-        while True:
+        while timeout is None or timeout >= 0:
             try:
                 data += self._endpoint.read(self._endpoint.wMaxPacketSize)
                 data_read = True
             except usb.core.USBError as e:
                 if e.args[0] == 110 and data_read:
-                    if len(data) < self.dataSize:
+                    if self.dataSize and len(data) < self.dataSize:
                         self.disconnect()
                         raise ReadException('Got %s bytes instead of %s - %s' % (len(data), self.dataSize, str(data)))
                     else:
                         break
-               
+                if isinstance(timeout, int):
+                    timeout -= 1
+
         if self.debug:
             print('Raw data', data)
 
@@ -98,7 +99,7 @@ class Reader:
 
     def map_character(self, c):
         return mapping.keys_page[self.keymap].get(c, '')
-    
+
     def disconnect(self):
         if self.shouldReset:
             self._device.reset()
